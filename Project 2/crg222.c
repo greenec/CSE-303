@@ -13,6 +13,7 @@
  *    >>a.out
  */
 
+#include <dirent.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -23,55 +24,122 @@ enum {
 };
 
 /*
+ * Prints the ASCII clear command to reset the terminal.
+ */
+void clearScreen()
+{
+	printf("\e[1;1H\e[2J");
+}
+
+/*
+ * Prints the contents of a given directory.
+ */
+void listDirectory(const char* const s)
+{
+	// pointer for directory 
+	struct dirent *de;
+
+	// opendir() returns a pointer of DIR type
+	DIR *dr = opendir(".");
+	
+	// opendir returns NULL if couldn't open directory
+	if (dr == NULL)
+	{
+		fprintf(stderr, "Could not open current directory\n");
+		return; 
+	}
+
+	while ((de = readdir(dr)) != NULL)
+	{	
+		printf("%s ", de->d_name);
+	}
+	
+	printf("\n");
+
+	closedir(dr); 
+}
+
+void runCommand(const char* const s)
+{
+	// make a copy of the input string
+	char cmd[MAXLINE];
+	strncpy(cmd, s, MAXLINE);
+	
+	// use strtok to get rid of line feed then find the first token
+	strtok(cmd, "\n");
+	char* ptr = strtok(&cmd[2], " ");
+
+	// get the rest of the tokens and call exec
+	int i = 0;
+	char* argvt[MAXLINE];
+	while (ptr) 
+	{
+		// passing a null pointer will cause cause it to continue where it left off
+		ptr = strtok(NULL, " ");
+		argvt[i++] = ptr;
+	}
+	
+	if (fork() == 0)
+	{
+		execvp(argvt[0], argvt);
+		fprintf(stderr, "EXEC FAILED\n");
+	}
+}
+
+/*
  * This function processes the command.
  */
 void processLine(const char* const s)
 {
-    /*
-	 * Do not hesitate to declare lots of local variables.
-	 * The optimizer removes them but can make the program more readable.
-     */
-	const char* const stopStr = "quit";
-	const char* const newline = "\n";
-	const int sLen = strlen(stopStr);
-	const int sVal = strncmp(s, stopStr, sLen);
-
     // output the command entered by the user
 	printf("Command received = %s\n", s);
-
-    // check if the user entered the stop string, "quit"
-	if(!sVal)
+	
+	/*
+	 * Command: Quit
+	 * Usage: "quit"
+	 * Description: Exits the shell program.
+	 */
+	const char* const stopStr = "quit";
+	if (strncmp(s, stopStr, strlen(stopStr)) == 0)
 	{
 		exit(0);
 	}
-	else
-    {
-		const char* const runStr = "run";
-		const int rLen = strlen(runStr);
-		const int rVal = strncmp(s, runStr, rLen);
-	   
-		if(!rVal)
-		{
-			char s2[MAXLINE];
-			char* argvt[MAXLINE];
-			int i = 0;
-			char* cx = strncpy(s2, s, MAXLINE);
 
-			// use strtok to get rid of line feed then find the first token
-			char* c = strtok(&s2[rLen - 1], newline);
-				  c = strtok(&s2[rLen - 1], " ");
-
-			// get the rest of the tokens and call exec
-			while (c) 
-			{
-				c = strtok(0," ");
-				argvt[i++]= c; 
-			}
-			
-			execvp(argvt[0],argvt);
-			printf("EXEC FAILED\n");
-		}
-    }
+	/*
+	 * Command: Clear
+	 * Usage: "clr"
+	 * Description: Clears the screen. 
+	 */
+	const char* const clearStr = "clr";
+	if (strncmp(s, clearStr, strlen(clearStr)) == 0)
+	{
+		clearScreen();
+		return;
+	}
+	
+	/*
+	 * Command: Directory
+	 * Usage: "dir <directory>"
+	 * Description: List the contents of <directory>
+	 */
+	const char* const directoryStr = "dir";
+	if (strncmp(s, directoryStr, strlen(directoryStr)) == 0)
+	{
+		listDirectory(s);
+		return;
+	}
+	
+	/*
+	 * Command: Run
+	 * Usage: "run <command> <arg1> <arg2> <...>"
+	 * Description: Runs the specified command with its arguments.
+	 */
+	const char* const runStr = "run";
+	if(strncmp(s, runStr, strlen(runStr)) == 0)
+	{
+		runCommand(s);
+		return;
+	}
 }
 
 int main()
@@ -79,21 +147,16 @@ int main()
     char line[MAXLINE];
 
     /*
-     * When a const is needed declare it as such.
-     */
-    const char* const prompt = "crg222 > ";
-
-    /*
      * Get a command line, parse it and process it.
      * This program exits via an exit(0) in the processLine() function.
      */
     while(1)
     {
-		const int j = fputs(prompt, stdout);
-		const char* const c = fgets(line, MAXLINE, stdin);
+		printf("crg222 > ");
+		fgets(line, MAXLINE, stdin);
 		processLine(line);
     }
+	
     return 0;
-
 }
 
