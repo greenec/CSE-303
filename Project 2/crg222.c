@@ -59,9 +59,6 @@ void clearCmd()
  */
 void directoryCmd(const char* const s)
 {
-	// pointer for directory 
-	struct dirent *de;
-
 	char cmd[MAXLINE];
 	strcpy(cmd, s);
 	
@@ -87,8 +84,16 @@ void directoryCmd(const char* const s)
 		return;
 	}
 
+	// pointer for directory 
+	struct dirent *de;
+	
 	while ((de = readdir(dr)) != NULL)
-	{	
+	{
+		if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
+		{
+			continue;
+		}
+		
 		printf("%s ", de->d_name);
 	}
 	
