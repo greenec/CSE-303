@@ -40,14 +40,29 @@ void listDirectory(const char* const s)
 	// pointer for directory 
 	struct dirent *de;
 
+	char s2[MAXLINE];
+	strcpy(s2, s);
+	
+	// use strtok to get rid of line feed then find the first token
+	strtok(s2, "\n");
+	strtok(&s2[2], " ");
+	char* dir = strtok(NULL, " ");
+	
+	// if no directory is specified, read the current directory
+	if (dir == NULL)
+	{
+		dir = s2;
+		strcpy(dir, ".");
+	}
+
 	// opendir() returns a pointer of DIR type
-	DIR *dr = opendir(".");
+	DIR *dr = opendir(dir);
 	
 	// opendir returns NULL if couldn't open directory
 	if (dr == NULL)
 	{
-		fprintf(stderr, "Could not open current directory\n");
-		return; 
+		fprintf(stderr, "Could not open the directory '%s'\n", dir);
+		return;
 	}
 
 	while ((de = readdir(dr)) != NULL)
