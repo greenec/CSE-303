@@ -309,7 +309,7 @@ void processLine(char** envp, const char* const s)
 		}
 
 		// parent waits for the child to finish
-		wait(NULL);
+		waitpid(pid, NULL, 0);
 	}
 }
 
