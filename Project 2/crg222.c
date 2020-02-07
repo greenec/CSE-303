@@ -100,7 +100,10 @@ void runCommand(const char* const s)
 	{
 		// this is the child process, exec the command
 		execvp(argvt[0], argvt);
+		
+		// this will only run if execvp fails
 		fprintf(stderr, "EXEC FAILED\n");
+		exit(1);
 	}
 	else
 	{
@@ -140,7 +143,7 @@ void processLine(const char* const s)
 		if (strncmp(s, clearStr, strlen(clearStr)) == 0)
 		{
 			clearScreen();
-			return;
+			exit(0);
 		}
 		
 		/*
@@ -152,7 +155,7 @@ void processLine(const char* const s)
 		if (strncmp(s, directoryStr, strlen(directoryStr)) == 0)
 		{
 			listDirectory(s);
-			return;
+			exit(0);
 		}
 		
 		/*
@@ -164,9 +167,11 @@ void processLine(const char* const s)
 		if(strncmp(s, runStr, strlen(runStr)) == 0)
 		{
 			runCommand(s);
-			return;
+			exit(0);
 		}
 	
+		// the command is not defined above, run it with the UNIX system() function
+		system(s);
 		exit(0);
 	}
 	else
