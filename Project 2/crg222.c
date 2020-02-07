@@ -18,6 +18,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 enum {
 	MAXLINE = 200
@@ -63,7 +64,7 @@ void runCommand(const char* const s)
 {
 	// make a copy of the input string
 	char cmd[MAXLINE];
-	strncpy(cmd, s, MAXLINE);
+	strcpy(cmd, s);
 	
 	// use strtok to get rid of line feed then find the first token
 	strtok(cmd, "\n");
@@ -79,10 +80,17 @@ void runCommand(const char* const s)
 		argvt[i++] = ptr;
 	}
 	
-	if (fork() == 0)
+	int pid = fork();
+	if (pid == 0)
 	{
+		// this is the child process, exec the command
 		execvp(argvt[0], argvt);
 		fprintf(stderr, "EXEC FAILED\n");
+	}
+	else
+	{
+		// parent waits for the child to finish
+		wait(NULL);
 	}
 }
 
