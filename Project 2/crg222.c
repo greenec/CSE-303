@@ -116,7 +116,7 @@ void processLine(const char* const s)
 {
     // output the command entered by the user
 	printf("Command received = %s\n", s);
-	
+
 	/*
 	 * Command: Quit
 	 * Usage: "quit"
@@ -128,40 +128,51 @@ void processLine(const char* const s)
 		exit(0);
 	}
 
-	/*
-	 * Command: Clear
-	 * Usage: "clr"
-	 * Description: Clears the screen. 
-	 */
-	const char* const clearStr = "clr";
-	if (strncmp(s, clearStr, strlen(clearStr)) == 0)
+	int pid = fork();
+	if (pid == 0)
 	{
-		clearScreen();
-		return;
-	}
+		/*
+		 * Command: Clear
+		 * Usage: "clr"
+		 * Description: Clears the screen. 
+		 */
+		const char* const clearStr = "clr";
+		if (strncmp(s, clearStr, strlen(clearStr)) == 0)
+		{
+			clearScreen();
+			return;
+		}
+		
+		/*
+		 * Command: Directory
+		 * Usage: "dir <directory>"
+		 * Description: List the contents of <directory>
+		 */
+		const char* const directoryStr = "dir";
+		if (strncmp(s, directoryStr, strlen(directoryStr)) == 0)
+		{
+			listDirectory(s);
+			return;
+		}
+		
+		/*
+		 * Command: Run
+		 * Usage: "run <command> <arg1> <arg2> <...>"
+		 * Description: Runs the specified command with its arguments.
+		 */
+		const char* const runStr = "run";
+		if(strncmp(s, runStr, strlen(runStr)) == 0)
+		{
+			runCommand(s);
+			return;
+		}
 	
-	/*
-	 * Command: Directory
-	 * Usage: "dir <directory>"
-	 * Description: List the contents of <directory>
-	 */
-	const char* const directoryStr = "dir";
-	if (strncmp(s, directoryStr, strlen(directoryStr)) == 0)
-	{
-		listDirectory(s);
-		return;
+		exit(0);
 	}
-	
-	/*
-	 * Command: Run
-	 * Usage: "run <command> <arg1> <arg2> <...>"
-	 * Description: Runs the specified command with its arguments.
-	 */
-	const char* const runStr = "run";
-	if(strncmp(s, runStr, strlen(runStr)) == 0)
+	else
 	{
-		runCommand(s);
-		return;
+		// parent waits for the child to finish
+		wait(NULL);
 	}
 }
 
