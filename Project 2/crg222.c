@@ -59,7 +59,7 @@ void clearCmd()
  */
 void directoryCmd(const char* const s)
 {
-	char cmd[MAXLINE];
+	char cmd[strlen(s)];
 	strcpy(cmd, s);
 	
 	// use strtok to get rid of line feed then find the first token
@@ -108,7 +108,7 @@ void directoryCmd(const char* const s)
 void runCmd(const char* const s)
 {
 	// make a copy of the input string
-	char cmd[MAXLINE];
+	char cmd[strlen(s)];
 	strcpy(cmd, s);
 	
 	// use strtok to get rid of line feed then find the first token
@@ -148,7 +148,7 @@ void runCmd(const char* const s)
 void sleepCmd(const char* const s)
 {
 	// make a copy of the input string
-	char cmd[MAXLINE];
+	char cmd[strlen(s)];
 	strcpy(cmd, s);
 	
 	// user strtok to get rid of line feed then find the first token
