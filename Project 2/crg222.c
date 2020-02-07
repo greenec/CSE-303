@@ -162,6 +162,20 @@ void sleepCmd(const char* const s)
 }
 
 /*
+ * Prints all the environment strings.
+ */
+void environmentCommand(char** envp)
+{
+	int i = 0;
+	while (envp[i] != NULL)
+	{
+		printf("%s\n", envp[i++]);
+	}
+	
+	printf("\n");
+}
+
+/*
  * Determines if the input string is blank.
  */
 int isBlankInput(const char* const s)
@@ -199,7 +213,7 @@ int isBackgroundCmd(const char* const s)
 /*
  * This function processes the command.
  */
-void processLine(const char* const s)
+void processLine(char** envp, const char* const s)
 {
 	if (isBlankInput(s))
 	{
@@ -270,6 +284,18 @@ void processLine(const char* const s)
 			sleepCmd(s);
 			exit(0);
 		}
+
+		/*
+		 * Command: Environment
+		 * Usage "environ"
+		 * Description: List all the environment strings.
+		 */
+		const char* const envStr = "environ";
+		if (strncmp(s, envStr, strlen(envStr)) == 0)
+		{
+			environmentCommand(envp);
+			exit(0);
+		}
 	
 		// the command is not defined above, run it with the UNIX system() function
 		system(s);
@@ -287,7 +313,7 @@ void processLine(const char* const s)
 	}
 }
 
-int main()
+int main(int argc, char** argv, char** envp)
 {
     char line[MAXLINE];
 
@@ -299,7 +325,7 @@ int main()
     {
 		printf("crg222 > ");
 		fgets(line, MAXLINE, stdin);
-		processLine(line);
+		processLine(envp, line);
     }
 	
     return 0;
