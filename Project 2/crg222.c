@@ -171,8 +171,6 @@ void environmentCommand(char** envp)
 	{
 		printf("%s\n", envp[i++]);
 	}
-	
-	printf("\n");
 }
 
 /*
@@ -219,9 +217,6 @@ void processLine(char** envp, const char* const s)
 	{
 		return;
 	}
-	
-    // output the command entered by the user
-	printf("Command received = %s\n", s);
 
 	/*
 	 * Command: Quit
@@ -234,82 +229,77 @@ void processLine(char** envp, const char* const s)
 		exit(0);
 	}
 
-	int pid = fork();
-	if (pid == 0)
+	// if there is a trailing '&', fork and return the parent immediately
+	int bBackgroundCmd = isBackgroundCmd(s);
+	if (bBackgroundCmd)
 	{
-		/*
-		 * Command: Clear
-		 * Usage: "clr"
-		 * Description: Clears the screen. 
-		 */
-		const char* const clearStr = "clr";
-		if (strncmp(s, clearStr, strlen(clearStr)) == 0)
+		int pid = fork();
+		if (pid != 0)
 		{
-			clearCmd();
-			exit(0);
-		}
-		
-		/*
-		 * Command: Directory
-		 * Usage: "dir <directory>"
-		 * Description: List the contents of <directory>
-		 */
-		const char* const directoryStr = "dir";
-		if (strncmp(s, directoryStr, strlen(directoryStr)) == 0)
-		{
-			directoryCmd(s);
-			exit(0);
-		}
-		
-		/*
-		 * Command: Run
-		 * Usage: "run <command> <arg1> <arg2> <...>"
-		 * Description: Runs the specified command with its arguments.
-		 */
-		const char* const runStr = "run";
-		if (strncmp(s, runStr, strlen(runStr)) == 0)
-		{
-			runCmd(s);
-			exit(0);
-		}
-		
-		/*
-		 * Command: Sleep
-		 * Usage "sleep <duration>"
-		 * Description: Sleeps for <duration> seconds.
-		 */
-		const char* const sleepStr = "sleep";
-		if (strncmp(s, sleepStr, strlen(sleepStr)) == 0)
-		{
-			sleepCmd(s);
-			exit(0);
-		}
-
-		/*
-		 * Command: Environment
-		 * Usage "environ"
-		 * Description: List all the environment strings.
-		 */
-		const char* const envStr = "environ";
-		if (strncmp(s, envStr, strlen(envStr)) == 0)
-		{
-			environmentCommand(envp);
-			exit(0);
-		}
-	
-		// the command is not defined above, run it with the UNIX system() function
-		system(s);
-		exit(0);
-	}
-	else
-	{
-		if (isBackgroundCmd(s))
-		{
+			// parent returns immediately to run the next command
 			return;
 		}
+	}
 
-		// parent waits for the child to finish
-		waitpid(pid, NULL, 0);
+	/*
+	 * Command: Clear
+	 * Usage: "clr"
+	 * Description: Clears the screen. 
+	 */
+	if (strncmp(s, "clr", 3) == 0)
+	{
+		clearCmd();
+	}
+	
+	/*
+	 * Command: Directory
+	 * Usage: "dir <directory>"
+	 * Description: List the contents of <directory>
+	 */
+	else if (strncmp(s, "dir", 3) == 0)
+	{
+		directoryCmd(s);
+	}
+	
+	/*
+	 * Command: Run
+	 * Usage: "run <command> <arg1> <arg2> <...>"
+	 * Description: Runs the specified command with its arguments.
+	 */
+	else if (strncmp(s, "run", 3) == 0)
+	{
+		runCmd(s);
+	}
+	
+	/*
+	 * Command: Sleep
+	 * Usage "sleep <duration>"
+	 * Description: Sleeps for <duration> seconds.
+	 */
+	else if (strncmp(s, "sleep", 5) == 0)
+	{
+		sleepCmd(s);
+	}
+
+	/*
+	 * Command: Environment
+	 * Usage "environ"
+	 * Description: List all the environment strings.
+	 */
+	else if (strncmp(s, "environ", 7) == 0)
+	{
+		environmentCommand(envp);
+	}
+	
+	else 
+	{
+		// the command is not defined above, run it with the UNIX system() function
+		system(s);
+	}
+
+	if (bBackgroundCmd)
+	{
+		exit(0);
 	}
 }
 
@@ -330,4 +320,3 @@ int main(int argc, char** argv, char** envp)
 	
     return 0;
 }
-
