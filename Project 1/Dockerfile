@@ -7,7 +7,7 @@ RUN apt-get update -y
 RUN apt-get upgrade -y
 
 # Install additional software needed for development
-RUN apt-get install -y git man curl build-essential screen gdb libssl-dev psmisc
+RUN apt-get install -y git man curl build-essential screen gdb libssl-dev psmisc valgrind
 
 # Change the working directory:
 WORKDIR "/root"
